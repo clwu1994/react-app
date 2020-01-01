@@ -1,4 +1,5 @@
 import Layout from './Layout';
+import './style/index.less'
 // import Sider from './Sider';
 import { BasicProps } from './Layout';
 export type LayoutProps = BasicProps
