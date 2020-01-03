@@ -1,6 +1,6 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import { ButtonSize } from './button';
+import { ButtonSize } from './Button';
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
 
 export interface ButtongGroupProps {

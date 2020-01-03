@@ -1,5 +1,5 @@
-import useAntdTable from './useAntdTable';
+// import useAntdTable from './useAntdTable';
 
 export {
-  useAntdTable
+  // useAntdTable
 }

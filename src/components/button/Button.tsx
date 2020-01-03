@@ -2,9 +2,59 @@ import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import Group from './ButtonGroup';
 import { tuple } from '../_util/type';
-
+import classNames from 'classnames';
+import './style/index.css';
+import { ConfigConsumer, ConfigConsumerProps } from '../config-provider'
+// 校验两个中文
+const rxTwoCNChar = /^[\u4e00-\u9fa5]{2}$/;
+const isTwoCNChar = rxTwoCNChar.test.bind(rxTwoCNChar);
 function isString(str: any) {
   return typeof str === 'string';
+}
+// 自动在两个汉字之间插入一个空格。
+function insertSpace(child: React.ReactChild, needInserted: boolean) {
+  // 检查子项是否undefined或为null。
+  if (child == null) {
+    return;
+  }
+  const SPACE = needInserted ? ' ' : '';
+  if (
+    typeof child !== 'string' &&
+    typeof child !== 'number' &&
+    isString(child.type) &&
+    isTwoCNChar(child.props.children)
+  ) {
+    return React.cloneElement(child, {}, child.props.children.split('').join(SPACE));
+  }
+  if (typeof child === 'string') {
+    if (isTwoCNChar(child)) {
+      child = child.split('').join(SPACE);
+    }
+    return <span>{child}</span>;
+  }
+  return child;
+}
+function spaceChildren(children: React.ReactNode, needInserted: boolean) {
+  let isPrevChildPure: boolean = false;
+  const childList: React.ReactNode[] = [];
+  React.Children.forEach(children, child => {
+    const type = typeof child;
+    const isCurrentChildPure = type === 'string' || type === 'number';
+    // 字符串和数字
+    if (isPrevChildPure && isCurrentChildPure) {
+      const lastIndex = childList.length - 1;
+      const lastChild = childList[lastIndex];
+      childList[lastIndex] = `${lastChild}${child}`;
+    } else {
+      childList.push(child);
+    }
+    isPrevChildPure = isCurrentChildPure;
+  })
+
+  //传递给React.Children.map以自动填充键
+  return React.Children.map(childList, child => 
+    insertSpace(child as React.ReactChild, needInserted)
+  );
 }
 
 // 按钮类型：默认、主题色、幽灵、虚线、危险、导航
@@ -99,6 +149,28 @@ class Button extends React.Component<ButtonProps, ButtonState> {
   componentDidMount() {
     this.fixTwoCNChar();
   }
+
+  componentDidUpdate(prevProps: ButtonProps) {
+    this.fixTwoCNChar();
+    if (prevProps.loading && prevProps.loading !== 'boolean') {
+      clearTimeout(this.delayTimeout)
+    }
+
+    const { loading } = this.props;
+    if (loading && typeof loading !== 'boolean' && loading.delay) {
+      this.delayTimeout = window.setTimeout(() => {
+        this.setState({ loading })
+      }, loading.delay);
+    } else if (prevProps.loading !== loading) {
+      this.setState({ loading });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+  }
   
   saveButtonRef = (node: HTMLElement | null) => {
     this.buttonNode = node;
@@ -114,7 +186,88 @@ class Button extends React.Component<ButtonProps, ButtonState> {
       (onClick as React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>)(e);
     }
   }
-  fixTwoCNChar() {}
+  fixTwoCNChar() {
+    if (!this.buttonNode) {
+      return;
+    }
+    const buttonText = this.buttonNode.textContent || this.buttonNode.innerText;
+    if (this.isNeedInserted() && isTwoCNChar(buttonText)) {
+      if (!this.state.hasTwoCNChar) {
+        this.setState({
+          hasTwoCNChar: true
+        })
+      } else {
+        this.setState({
+          hasTwoCNChar: false
+        })
+      }
+    }
+  }
+  isNeedInserted() {
+    const { icon, children, type } = this.props;
+    return React.Children.count(children) === 1 && !icon && type !== 'link';
+  }
+  renderButton = ({ getPrefixCls, autoInsertSpaceInButton }: ConfigConsumerProps) => {
+    const {
+      prefix: customizePrefixCls,
+      type,
+      shape,
+      size,
+      className,
+      children,
+      icon,
+      ghost,
+      block,
+      ...rest
+    } = this.props;
+    const { loading, hasTwoCNChar } = this.state;
+
+    const prefixCls = getPrefixCls('btn', customizePrefixCls);
+    const autoInsertSpace = autoInsertSpaceInButton !== false;
+    // large => lg
+    // small => sm
+    let sizeCls = '';
+    switch (size) {
+      case 'large':
+        sizeCls = 'lg';
+        break;
+      case 'small':
+        sizeCls = 'sm';
+        break;
+      default:
+        break;
+    }
+    const iconType = loading ? 'loading' : icon;
+    const classes = classNames(prefixCls, className, {
+      [`${prefixCls}-${type}`]: type,
+      [`${prefixCls}-${shape}`]: shape,
+      [`${prefixCls}-${sizeCls}`]: sizeCls,
+      [`${prefixCls}-two-chinese-chars`]: hasTwoCNChar && autoInsertSpace,
+      [`${prefixCls}-icon-only`]: !children && children !== 0 && iconType,
+      [`${prefixCls}-loading`]: !!loading,
+      [`${prefixCls}-background-ghost`]: ghost,
+      [`${prefixCls}-block`]: block,
+    });
+    // const iconNode = iconType ? <Icon type={iconType} /> : null;
+    const kids = children || children === 0
+      ? spaceChildren(children, this.isNeedInserted() && autoInsertSpace)
+      : null
+    const { htmlType, ...otherProps } = rest as NativeButtonProps;
+    const buttonNode = (
+      <button
+        type={htmlType}
+        className={classes}
+        onClick={this.handleClick}
+        ref={this.saveButtonRef}
+      >
+        {kids}
+      </button>
+    )
+    return <>{buttonNode}</>
+  }
+  render() {
+    return <ConfigConsumer>{this.renderButton}</ConfigConsumer>
+  }
 }
 
 export default Button;

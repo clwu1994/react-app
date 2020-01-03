@@ -65,7 +65,7 @@ function useAsync<Result = any> (
   fn: (...args: any[]) => Promise<Result>,
   deps?: DependencyList | Options<Result>,
   options?: Options<Result>,
-): ReturnValue<Result> {
+): any {
   const _deps: DependencyList = (Array.isArray(deps) ? deps: []) as DependencyList;
   const _options: Options<Result> = (typeof deps === 'object' && !Array.isArray(deps)
     ? deps
