@@ -4,6 +4,8 @@ import Group from './ButtonGroup';
 import { tuple } from '../_util/type';
 import classNames from 'classnames';
 import './style/index.css';
+import { omit } from 'lodash';
+import { Icon } from 'antd'
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider'
 // 校验两个中文
 const rxTwoCNChar = /^[\u4e00-\u9fa5]{2}$/;
@@ -52,7 +54,7 @@ function spaceChildren(children: React.ReactNode, needInserted: boolean) {
   })
 
   //传递给React.Children.map以自动填充键
-  return React.Children.map(childList, child => 
+  return React.Children.map(childList, child =>
     insertSpace(child as React.ReactChild, needInserted)
   );
 }
@@ -248,21 +250,41 @@ class Button extends React.Component<ButtonProps, ButtonState> {
       [`${prefixCls}-background-ghost`]: ghost,
       [`${prefixCls}-block`]: block,
     });
-    // const iconNode = iconType ? <Icon type={iconType} /> : null;
+    const iconNode = iconType ? <Icon type={iconType} /> : null;
     const kids = children || children === 0
       ? spaceChildren(children, this.isNeedInserted() && autoInsertSpace)
       : null
+    const linkButtonRestProps = omit(rest as AnchorButtonProps, ['htmlType', 'loading']);
+    if (linkButtonRestProps.href !== undefined) {
+      return (
+        <a
+          {...linkButtonRestProps}
+          className={classes}
+          onClick={this.handleClick}
+          ref={this.saveButtonRef}
+        >
+          {iconNode}
+          {kids}
+        </a>
+      );
+    }
+    // // React无法识别DOM元素上的htmlType属性。在这里，我们从“rest”中挑选出来。
     const { htmlType, ...otherProps } = rest as NativeButtonProps;
     const buttonNode = (
       <button
+        {...(omit(otherProps, ['loading']) as NativeButtonProps)}
         type={htmlType}
         className={classes}
         onClick={this.handleClick}
         ref={this.saveButtonRef}
       >
+        {iconNode}
         {kids}
       </button>
     )
+    if (type === 'link') {
+      return buttonNode;
+    }
     return <>{buttonNode}</>
   }
   render() {

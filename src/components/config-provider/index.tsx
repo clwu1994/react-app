@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { ConfigConsumer, ConfigContext, CSPConfig, ConfigConsumerProps as IConfigConsumerProps } from './context';
-export { ConfigConsumer };
-export type ConfigConsumerProps = IConfigConsumerProps;
+import { ConfigConsumer, ConfigContext, CSPConfig, ConfigConsumerProps } from './context';
+// @ts-ignore
+export { ConfigConsumer, ConfigConsumerProps };
 export const configProviderProps = []
 
 export interface ConfigProviderProps {
