@@ -15,7 +15,8 @@ export interface ConfigConsumerProps {
   // locale?: Locale;
   pageHeader?: {
     ghost: boolean;
-  }
+  };
+  direction?: 'ltr' | 'rtl';
 }
 
 export const ConfigContext = createReactContext<ConfigConsumerProps>({
