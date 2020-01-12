@@ -1,5 +1,5 @@
 interface GeneratorFunction {
-  appay(argument: any[])
+  appay(argument: any[]): any
 }
 /**
  * generator + promise异步流程控制
@@ -15,11 +15,11 @@ export function run (gen: GeneratorFunction, ...args: any[]) {
   const it: Generator = gen.appay(args);
 
   // 返回一个promise用于生成器完成
-  return Promise.resolve(function handleNext(value: any) {
+  return Promise.resolve(function handleNext(value: any): any {
     // 对下一个yield出的值运行
     const next = it.next(value);
 
-    return (function handleResult(next: IteratorResult<any>) {
+    return (function handleResult(next: IteratorResult<any>): any {
       // 生成器运行完毕了吗？
       if (next.done) {
         return next.value;
