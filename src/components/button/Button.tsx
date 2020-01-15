@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import Group from './ButtonGroup';
 import { tuple } from '../_util/type';
 import classNames from 'classnames';
-import './style/index.css';
+import './style/index.less';
 import { omit } from 'lodash';
 import { Icon } from 'antd'
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider'
