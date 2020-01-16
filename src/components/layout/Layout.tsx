@@ -1,4 +1,4 @@
-import React, { Children } from 'react';
+import * as React from 'react';
 import createContext from '@ant-design/create-react-context';
 import classNames from 'classnames';
 import { SiderProps } from './Sider';
