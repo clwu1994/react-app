@@ -170,4 +170,52 @@ export default class Search extends React.Component<SearchProps, any> {
 
     return button;
   }
+
+  renderSearch = ({ getPrefixCls, direction } : ConfigConsumerProps) => {
+    const {
+      prefixCls: customizePrefixCls,
+      inputPrefixCls: customizeInputPrefixCls,
+      size,
+      enterButton,
+      className,
+      ...restProps
+    } = this.props;
+
+    delete (restProps as any).onSearch;
+    delete (restProps as any).loading;
+
+    const prefixCls = getPrefixCls('input-search', customizePrefixCls);
+    const inputPrefixCls = getPrefixCls('input', customizeInputPrefixCls);
+
+    let inputClassName;
+
+    if (enterButton) {
+      inputClassName = classNames(prefixCls, className, {
+        [`${prefixCls}-rtl`]: direction === 'rtl',
+        [`${prefixCls}-enter-button`]: !!enterButton,
+        [`${prefixCls}-${size}`]: !!size
+      });
+    } else {
+      inputClassName = classNames(prefixCls, className, {
+        [`${prefixCls}-rtl`]: direction === 'rtl'
+      });
+    }
+
+    return (
+      <Input
+        onPressEnter={this.onSearch}
+        {...restProps}
+        size={size}
+        prefixCls={inputPrefixCls}
+        addonAfter={this.renderAddonAfter(prefixCls)}
+        suffix={this.renderSuffix(prefixCls)}
+        onChange={this.onChange}
+        ref={this.saveInput}
+        className={inputClassName}
+      />
+    );
+  }
+  render() {
+    return <ConfigConsumer>{this.renderSearch}</ConfigConsumer>;
+  }
 }
