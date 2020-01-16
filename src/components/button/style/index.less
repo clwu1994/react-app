@@ -2,6 +2,26 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
+
+@ant-prefix: 'ant';
+@btn-prefix-cls: ~'@{ant-prefix}-btn';
+@line-height-base: 1.499;
+@ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+
+.@{btn-prefix-cls} {
+  line-height: @line-height-base;
+  &-rtl {
+    direction: rtl;
+  }
+  > i,
+  > span {
+    display: inline-block;
+    transition: margin-left 0.3s @ease-in-out;
+    pointer-events: none;
+
+  }
+}
+
 .ant-btn {
   line-height: 1.499;
   position: relative;
